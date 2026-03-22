@@ -1,93 +1,90 @@
 /*
-DDL script: create Bronze tables
-Purpose: This script bulk inserts the date to each specific table in the Bronze schema, delets tables if they already exist.
+===============================================================================
+DDL Script: Create Bronze Tables
+===============================================================================
+Script Purpose:
+    This script creates tables in the 'bronze' schema, dropping existing tables 
+    if they already exist.
+	  Run this script to re-define the DDL structure of 'bronze' Tables
+===============================================================================
 */
-create or alter procedure  bronze.load_bronze as
 
-begin
-	declare @start_time as datetime, @end_time as datetime
-	set @start_time = GETDATE();
-	begin try
-	set @start_time = GETDATE();
-		truncate table [bronze].[crm_cust_info]
-		bulk insert [bronze].[crm_cust_info]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_crm\cust_info.csv'
-		with (
-		firstrow = 2,
-		fieldterminator =',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + 'seconds';
+IF OBJECT_ID('bronze.crm_cust_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_cust_info;
+GO
 
-	set @start_time = GETDATE();
-		truncate table [bronze].[crm_prd_info]
-		bulk insert [bronze].[crm_prd_info]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_crm\prd_info.csv'
-		with (
-		firstrow = 2,
-		fieldterminator =',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
+CREATE TABLE bronze.crm_cust_info (
+    cst_id              INT,
+    cst_key             NVARCHAR(50),
+    cst_firstname       NVARCHAR(50),
+    cst_lastname        NVARCHAR(50),
+    cst_marital_status  NVARCHAR(50),
+    cst_gndr            NVARCHAR(50),
+    cst_create_date     DATE
+);
+GO
 
-	set @start_time = getdate();
-		truncate table [bronze].[crm_sales_details]
-		bulk insert [bronze].[crm_sales_details]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_crm\sales_details.csv'
-		with (
-		firstrow = 2,
-		fieldterminator =',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
+IF OBJECT_ID('bronze.crm_prd_info', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_prd_info;
+GO
 
-	set @start_time = GETDATE();
-		truncate table [bronze].[erp_cust_az12]
-		bulk insert [bronze].[erp_cust_az12]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_erp\CUST_AZ12.csv'
-		with (
-		firstrow = 2,
-		fieldterminator =',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
+CREATE TABLE bronze.crm_prd_info (
+    prd_id       INT,
+    prd_key      NVARCHAR(50),
+    prd_nm       NVARCHAR(50),
+    prd_cost     INT,
+    prd_line     NVARCHAR(50),
+    prd_start_dt DATETIME,
+    prd_end_dt   DATETIME
+);
+GO
 
-	set @start_time = GETDATE();
-		truncate table [bronze].[erp_loc_a101]
-		bulk insert [bronze].[erp_loc_a101]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_erp\LOC_A101.csv'
-		with (
-		firstrow = 2,
-		fieldterminator =',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
+IF OBJECT_ID('bronze.crm_sales_details', 'U') IS NOT NULL
+    DROP TABLE bronze.crm_sales_details;
+GO
 
-	set @start_time = GETDATE()
-		truncate table [bronze].[erp_px_cat_g1v2]
-		bulk insert [bronze].[erp_px_cat_g1v2]
-		from 'C:\Users\pandi\Documents\1. Portfolio\sql-data-warehouse-project-main\sql-data-warehouse-project-main\datasets\source_erp\PX_CAT_G1V2.csv'
-		with (
-		firstrow = 2,
-		fieldterminator = ',',
-		tablock
-		);
-	set @end_time = GETDATE();
-	print 'Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
-	end try
-	begin catch
-		print '==========================================='
-		print 'ERROR OCCURED DURING LOADING BRONZE LAYER'
-		print 'Error Message' + error_message();
-		print 'Error Message' + cast(error_number() as nvarchar);
-		print 'Error Message' + cast(error_state() as nvarchar);
-		print '==========================================='
-	end catch
-set @end_time = GETDATE();
-PRINT 'Total  Load Duration: ' + cast(datediff(second, @start_time, @end_time) as nvarchar) + ' seconds';
-end
+CREATE TABLE bronze.crm_sales_details (
+    sls_ord_num  NVARCHAR(50),
+    sls_prd_key  NVARCHAR(50),
+    sls_cust_id  INT,
+    sls_order_dt INT,
+    sls_ship_dt  INT,
+    sls_due_dt   INT,
+    sls_sales    INT,
+    sls_quantity INT,
+    sls_price    INT
+);
+GO
+
+IF OBJECT_ID('bronze.erp_loc_a101', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_loc_a101;
+GO
+
+CREATE TABLE bronze.erp_loc_a101 (
+    cid    NVARCHAR(50),
+    cntry  NVARCHAR(50)
+);
+GO
+
+IF OBJECT_ID('bronze.erp_cust_az12', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_cust_az12;
+GO
+
+CREATE TABLE bronze.erp_cust_az12 (
+    cid    NVARCHAR(50),
+    bdate  DATE,
+    gen    NVARCHAR(50)
+);
+GO
+
+IF OBJECT_ID('bronze.erp_px_cat_g1v2', 'U') IS NOT NULL
+    DROP TABLE bronze.erp_px_cat_g1v2;
+GO
+
+CREATE TABLE bronze.erp_px_cat_g1v2 (
+    id           NVARCHAR(50),
+    cat          NVARCHAR(50),
+    subcat       NVARCHAR(50),
+    maintenance  NVARCHAR(50)
+);
+GO
